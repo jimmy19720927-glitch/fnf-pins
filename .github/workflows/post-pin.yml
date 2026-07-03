@@ -2,7 +2,7 @@ name: Post Pin
 
 on:
   schedule:
-    - cron: '0 13 * * *'   # 每天 UTC 13:00 = 台灣 21:00 = 美東早上（Pinterest 黃金時段）
+    - cron: '0 4,8,13 * * *'   # 每天 3 發：UTC 04/08/13 = 台灣 12:00/16:00/21:00，每次發 queue 最前面 1 張
   workflow_dispatch:
 
 permissions:
