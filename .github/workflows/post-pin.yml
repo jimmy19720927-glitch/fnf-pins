@@ -1,0 +1,30 @@
+name: Post Pin
+
+on:
+  schedule:
+    - cron: '0 13 * * *'   # 每天 UTC 13:00 = 台灣 21:00 = 美東早上（Pinterest 黃金時段）
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: post-pin
+  cancel-in-progress: false
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Post next queued pin via Make.com
+        env:
+          MAKE_TOKEN: ${{ secrets.MAKE_TOKEN }}
+        run: python3 scripts/post_pin.py
+      - name: Commit queue state
+        run: |
+          git config user.name "fnf-pins bot"
+          git config user.email "actions@github.com"
+          git add queue posted
+          git diff --cached --quiet || git commit -m "pin posted $(date -u +%Y-%m-%d)"
+          git push
