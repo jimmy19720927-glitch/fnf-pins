@@ -102,12 +102,15 @@ def main() -> int:
     execution_id = run_resp.get("executionId")
     print(f"run: HTTP {run_status}, executionId={execution_id}, status={run_resp.get('status')}")
 
+    # run 回應的 status:1 + executionId 就是成功依據；logs 只做參考輸出
+    # （logs 端點最新一筆常是 stop 事件，沒有 status 欄位，不能拿來判定）
     time.sleep(3)
-    _, logs = make_api(f"/scenarios/{SCENARIO_ID}/logs?pg[limit]=1")
-    log = (logs.get("scenarioLogs") or [{}])[0]
-    print(f"log check: status={log.get('status')} operations={log.get('operations')}")
+    _, logs = make_api(f"/scenarios/{SCENARIO_ID}/logs?pg%5Blimit%5D=5")
+    for log in logs.get("scenarioLogs", []):
+        if log.get("imtId", "").endswith(str(execution_id)):
+            print(f"log check: status={log.get('status')} operations={log.get('operations')}")
 
-    if run_status != 200 or not execution_id or log.get("status") != 1:
+    if run_status != 200 or not execution_id or run_resp.get("status") != 1:
         print("PIN POST FAILED — queue file left in place")
         print(json.dumps(run_resp)[:500])
         return 1
