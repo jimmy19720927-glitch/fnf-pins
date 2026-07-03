@@ -27,14 +27,22 @@ def make_api(path, method="GET", body=None):
         headers={
             "Authorization": f"Token {os.environ['MAKE_TOKEN']}",
             "Content-Type": "application/json",
+            # Make.com 前面的 Cloudflare 會用 error 1010 擋 Python-urllib 預設 UA
+            "User-Agent": "curl/8.7.1",
         },
         method=method,
     )
     try:
         with urllib.request.urlopen(req) as resp:
-            return resp.status, json.loads(resp.read().decode())
+            raw = resp.read().decode()
+            code = resp.status
     except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read().decode() or "{}")
+        raw = e.read().decode()
+        code = e.code
+    try:
+        return code, json.loads(raw or "{}")
+    except json.JSONDecodeError:
+        return code, {"raw": raw[:500]}
 
 
 def main() -> int:
