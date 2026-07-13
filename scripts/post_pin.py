@@ -46,6 +46,11 @@ def make_api(path, method="GET", body=None):
 
 
 def main() -> int:
+    # git 不追蹤空資料夾，佇列全發完後 queue/ 可能整個消失 → listdir 會 FileNotFoundError
+    # 當成「沒東西可發」正常結束，別讓 Action 紅字（queue/.gitkeep 也保住資料夾）
+    if not os.path.isdir("queue"):
+        print("queue/ dir missing (all posted), nothing to post")
+        return 0
     queued = sorted(f for f in os.listdir("queue") if f.endswith(".json"))
     if not queued:
         print("queue is empty, nothing to post")
