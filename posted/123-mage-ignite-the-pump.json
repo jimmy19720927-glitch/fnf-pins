@@ -3,5 +3,8 @@
   "description": "Cut through the marketing hype and find a pre-workout that actually earns its energy — caffeine dosing, pump ingredients, and what to skip. Full breakdown on the blog.",
   "link": "https://fuelnfithub.com/best-pre-workout-supplements-2026/",
   "image": "images/mage-ignite-the-pump.png",
-  "board_id": "1057009043733562768"
+  "board_id": "1057009043733562768",
+  "posted_manually": true,
+  "posted_at": "2026-08-14T (診斷用手動發布，非 Make.com 管線)",
+  "note": "Make.com→Pinterest createPin 持續回 400/2787，用來測試帳號是否被限制。手動網頁發布成功，證實問題在 Make.com API 路徑而非 Pinterest 帳號本身。"
 }

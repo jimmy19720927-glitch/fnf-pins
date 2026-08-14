@@ -3,5 +3,8 @@
   "description": "Micronized creatine monohydrate, 5g per serving, 100 servings. 4.7 stars, 59K+ reviews, 100K+ bought last month. #ad As an Amazon Associate I earn from qualifying purchases. #creatine #muscle #strength #fuelnfithub",
   "link": "https://www.amazon.com/dp/B00GL2HMES?tag=fnfpins-20",
   "image": "images/product-nutricost-creatine.png",
-  "board_id": "1057009043733562768"
+  "board_id": "1057009043733562768",
+  "posted_manually": true,
+  "posted_at": "2026-08-14T (診斷用手動發布，非 Make.com 管線)",
+  "note": "Make.com→Pinterest createPin 持續回 400/2787（已測全天5次排程+2次手動觸發皆失敗），改用 Pinterest 網頁版手動發布，證實問題在 Make.com API 路徑而非 Pinterest 帳號本身。"
 }

@@ -3,5 +3,8 @@
   "description": "20-30mmHg graduated compression for runners, lifters and anyone on their feet all day. 4.4 stars, 42K+ reviews, 800+ bought last month. #ad As an Amazon Associate I earn from qualifying purchases. #compressionsocks #recovery #running #fuelnfithub",
   "link": "https://www.amazon.com/dp/B01J4MF53Q?tag=fnfpins-20",
   "image": "images/product-physix-compressionsocks.png",
-  "board_id": "1057009043733562768"
+  "board_id": "1057009043733562768",
+  "posted_manually": true,
+  "posted_at": "2026-08-14T (診斷用手動發布，非 Make.com 管線)",
+  "note": "Make.com→Pinterest createPin 持續回 400/2787（已測全天5次排程+2次手動觸發皆失敗），改用 Pinterest 網頁版手動發布，證實問題在 Make.com API 路徑而非 Pinterest 帳號本身。"
 }
