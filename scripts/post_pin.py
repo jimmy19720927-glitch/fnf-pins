@@ -8,10 +8,12 @@ file stays put for the next attempt.
 
 Env: MAKE_TOKEN, GITHUB_REPOSITORY (e.g. "user/fnf-pins")
 """
+import datetime
 import json
 import os
 import sys
 import time
+import zoneinfo
 import urllib.parse
 import urllib.request
 
@@ -45,7 +47,64 @@ def make_api(path, method="GET", body=None):
         return code, {"raw": raw[:500]}
 
 
+# -- 發佈窗口守門（2026-10-06 加） -----------------------------------------
+# GitHub Actions 的排程延遲從 8 月的 ~100 分鐘漂到 10 月的 5~6 小時，
+# 導致每天 3 張有 2 張落在美東凌晨 3~4 點（受眾全在睡，等於白發）。
+# 不再用「排程時間 + 預估延遲」去猜落點，改成排一排候補班次 (UTC 17:37~02:37 每小時一班)，
+# 每班執行時自己看真實當地時間，不在窗口內就放棄。延遲多久都不影響結果。
+TARGET_TZ = "America/New_York"   # 用時區名而非固定 offset，11 月初 EDT->EST 自動跟著換
+WINDOW_START_HOUR = 19           # 美東 19:00（含）
+WINDOW_END_HOUR = 23             # 美東 23:00（不含）—— Pinterest 晚間尖峰
+MAX_PER_DAY = 3
+
+
+def _posted_today(today):
+    """數今天（美東日期）已發幾張。只看 posted/ 最後 10 個檔就夠——一天上限 3 張。"""
+    if not os.path.isdir("posted"):
+        return 0
+    tz = zoneinfo.ZoneInfo(TARGET_TZ)
+    recent = sorted(f for f in os.listdir("posted") if f.endswith(".json"))[-10:]
+    count = 0
+    for name in recent:
+        try:
+            with open(f"posted/{name}", encoding="utf-8") as f:
+                stamp = json.load(f).get("posted_at")
+            if not stamp:
+                continue
+            when = datetime.datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ")
+            when = when.replace(tzinfo=datetime.timezone.utc).astimezone(tz)
+        except (OSError, ValueError, json.JSONDecodeError):
+            continue  # 壞檔不該擋住發佈
+        if when.date() == today:
+            count += 1
+    return count
+
+
+def window_check():
+    """回傳 None 表示可以發；回傳字串表示該跳過的原因。FORCE_POST=1 可繞過。"""
+    if os.environ.get("FORCE_POST") == "1":
+        print("FORCE_POST=1 -- 跳過窗口檢查")
+        return None
+
+    now = datetime.datetime.now(zoneinfo.ZoneInfo(TARGET_TZ))
+    if not (WINDOW_START_HOUR <= now.hour < WINDOW_END_HOUR):
+        return (f"當地時間 {now:%H:%M %Z} 不在發佈窗口 "
+                f"{WINDOW_START_HOUR}:00~{WINDOW_END_HOUR}:00 內")
+
+    already = _posted_today(now.date())
+    if already >= MAX_PER_DAY:
+        return f"{now.date()} 已發 {already} 張，達單日上限 {MAX_PER_DAY}"
+
+    print(f"窗口 OK -- 當地 {now:%H:%M %Z}，今日已發 {already}/{MAX_PER_DAY}")
+    return None
+
+
 def main() -> int:
+    skip = window_check()
+    if skip:
+        print(f"SKIP -- {skip}")
+        return 0
+
     # git 不追蹤空資料夾，佇列全發完後 queue/ 可能整個消失 → listdir 會 FileNotFoundError
     # 當成「沒東西可發」正常結束，別讓 Action 紅字（queue/.gitkeep 也保住資料夾）
     if not os.path.isdir("queue"):
